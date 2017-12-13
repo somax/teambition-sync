@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        a{
+            text-decoration: none;
+        }
+        a:hover{
+            text-decoration: underline;
+        }
+        pre {
+            background: #f3f3f3;
+            padding: 5px;
+        }
+
+        a.btn {
+            background: #3eb8da;
+            padding: 5px 20px;
+            color: white;
+        }
+
+        .list {
+            padding: 10px;
+            border: 1px solid #f3f3f3;
+        }
+
+        .list>a {
+            margin: 10px;
+            color: #3db8da;
+        }
+        iframe {
+            width: 100%;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Teambition Sync</h1>
+    <a class="btn" id="linkGetToken" href="">
+        Get token</a>
+
+    <h3>Token (in cookie):</h3>
+    <pre id="token">
+
+    </pre>
+
+    <h3>API List:</h3>
+    <div class="list" id="apiList">
+
+    </div>
+
+    <pre id="result"></pre>
+
+</body>
+<script>
+    let cookies = parserCookieStr(document.cookie);
+    let $linkGetToken = document.querySelector('#linkGetToken');
+    let $token = document.querySelector('#token');
+    let $appList = document.querySelector('#apiList');
+    let $result = document.querySelector('#result');
+    
+    $linkGetToken.href = `https://account.teambition.com/oauth2/authorize?client_id=81b72af0-df42-11e7-b88c-3156a53a7259&redirect_uri=${document.location.origin}/auth/callback`
+    
+
+    $token.innerHTML = cookies.tb_token;
+
+    let apis = [
+        '/',
+        '/users/me',
+        '/projects'
+    ]
+
+    createApiList(apis)
+
+    $appList.onclick = function clickApi(event) {
+        let element = event.target
+        if( element.tagName === 'A'){
+            requestApi(element.innerHTML);    
+        }
+    }
+
+    function requestApi(api) {
+        // 分页 ?count=10&page=1, 默认 count=30 ，count 小于 10 无效
+        fetch(`/api${api}`, {
+            credentials: "same-origin"
+        })
+        .then(body => body.json())
+        .then(fillResult)
+        .catch(errorHandler)
+    }
+
+    function fillResult(content){
+        $result.innerHTML = JSON.stringify(content,null,2);
+    }
+
+    function createApiList(arr) {
+        arr.forEach(api => {
+            let _a = document.createElement('a');
+            _a.href = `#`;
+            _a.innerHTML = api;
+            // _a.target = 'result';
+            $appList.append(_a);
+        })
+    }
+
+    function parserCookieStr(cookieStr) {
+        let result = {};
+        cookieStr.split('; ')
+            .forEach((sec) => {
+                let arrRes = sec.split('=')
+                result[arrRes[0]] = arrRes[1];
+            })
+        return result;
+    }
+
+    function errorHandler(error){
+        console.error(error);
+    }
+</script>
+
+</html>
