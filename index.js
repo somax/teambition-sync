@@ -3,7 +3,7 @@ const Server = require('./lib/server');
 const request = require('request');
 
 
-let app = new Server();
+let app = new Server(process.argv[2]);
 
 app = new Auth(app)
 
