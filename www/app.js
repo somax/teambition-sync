@@ -1,10 +1,17 @@
 let cookies = parserCookieStr(document.cookie);
-let $linkGetToken = document.querySelector('#linkGetToken');
-let $token = document.querySelector('#token');
-let $appList = document.querySelector('#apiList');
-let $result = document.querySelector('#result');
-let $api_str = document.querySelector('#api_str');
-let $btn_exec = document.querySelector('#btn_exec');
+const qs = s => document.querySelector(s);
+let $linkGetToken = qs('#linkGetToken');
+let $token = qs('#token');
+let $appList = qs('#apiList');
+let $result = qs('#result');
+let $api_str = qs('#api_str');
+let $btn_exec = qs('#btn_exec');
+let $cb_sync = qs('#cb_sync');
+let $table_name = qs('#table_name');
+let $count = qs('#count');
+let $page = qs('#page');
+
+
 
 $linkGetToken.href = `https://account.teambition.com/oauth2/authorize?client_id=81b72af0-df42-11e7-b88c-3156a53a7259&redirect_uri=${document.location.origin}/auth/callback`
 
@@ -20,14 +27,15 @@ let apis = [
 
 createApiList(apis)
 
+// when click api list
 $appList.onclick = function clickApi(event) {
     event.preventDefault();
     let element = event.target;
     let api_str = element.innerHTML;
     if (element.tagName === 'A') {
         $api_str.value = api_str;
-        $btn_exec.disabled = false;
-        doExecute();
+        onApiStrChange(api_str);
+        // doExecute();
     }
 }
 
@@ -35,11 +43,16 @@ $api_str.onkeyup = function (event) {
     if (event.key === "Enter") {
         doExecute();
     }
-    $btn_exec.disabled = this.value === '';
+    onApiStrChange(this.value);
 }
 
 $btn_exec.onclick = function (event) {
     doExecute();
+}
+
+function onApiStrChange(v) {
+    $btn_exec.disabled = v === '';
+    $table_name.value = v ? v.split('?')[0].split('/')[1] : '';
 }
 
 function doExecute() {
@@ -48,7 +61,7 @@ function doExecute() {
 
 function requestApi(api) {
     // 分页 ?count=10&page=1, 默认 count=30 ，count 小于 10 无效
-    fetch(`/api${api}`, {
+    fetch(`/api${api}?count=${$count.value}&page=${$page.value}`, {
         credentials: "same-origin"
     })
         .then(

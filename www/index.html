@@ -55,12 +55,18 @@
 
         input{
             border:1px solid #3eb8da;
-            padding: 5px;
-            width: 100%;
-            box-sizing: border-box;
+            padding: 3px;
+            /* box-sizing: border-box; */
+            /* font-size: 1em; */
         }
-        .execute-box {
+        .flex-box {
             display: flex;
+            padding: 2px 0;
+            /* justify-content: space-between; */
+            align-items: center;
+        }
+        #api_str{
+            width: 100%;
         }
 
         .error{
@@ -77,32 +83,42 @@
     <h1>Teambition Sync</h1>
 
 
-    <a class="btn" id="linkGetToken" href="">
-        Get token</a>
+    
 
-    <h3>Access_Token:</h3>
+    <h3>Access_Token: <a class="btn" id="linkGetToken" href="">Get token</a></h3>
         <div class="wrap">
             <button class="btn-copy" onclick="copy('#token')">copy</button>
     <pre id="token"></pre>
     </div>
 
+    <!-- api list -->
     <h3>API List:</h3>
     <a id="apis"></a>
     <div class="list" id="apiList">
 
     </div>
+    <blockquote>
+        More API see:
+        <a href="https://docs.teambition.com/" target="tb_docs">https://docs.teambition.com/</a>
+    </blockquote>
 
-    <h3>Execute API </h3>
+    <!-- execute api -->
+    <h3>Execute API:</h3>
 
-    <div class="execute-box">
+    <div class="list">
+
+        Count: <input type="number" name="" id="count" step="10" min="10" max="100" placeholder="num per page" value="10">
+        Page: <input type="number" name="" id="page" min="1" max="999" placeholder="page number" value="1">
+        <span> </span>
+        <input type="checkbox" id="cb_sync" />
+        <label for="cb_sync"> SyncTo: </label>
+        <input id="table_name" type="text" id="" placeholder="table of database"/>
+    </div>
+
+    <div class="flex-box">
         <input id="api_str" type="text" placeholder="/version"/>
         <button id="btn_exec" disabled>Execute</button>
     </div>
-
-    <blockquote>
-        API Docs:
-        <a href="https://docs.teambition.com/" target="tb_docs">https://docs.teambition.com/</a>
-    </blockquote>
 
     <div class="wrap">
         <button class="btn-copy" onclick="copy('#result')">copy</button>
