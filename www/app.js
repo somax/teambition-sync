@@ -14,7 +14,8 @@ $token.innerHTML = cookies.tb_token;
 let apis = [
     '/version',
     '/users/me',
-    '/projects'
+    '/projects',
+    '/posts/me'
 ]
 
 createApiList(apis)
@@ -100,4 +101,22 @@ function parserCookieStr(cookieStr) {
 function errorHandler(error) {
     fillResult(error, true)
     console.error(error);
+}
+
+function copy(selector) {
+    $target = document.querySelector(selector);
+
+        var range = document.createRange();
+        range.selectNode($target);
+        window.getSelection().addRange(range);
+
+        try {
+            var successful = document.execCommand('copy');
+            var msg = successful ? 'successful' : 'unsuccessful';
+            console.log('Copy was ' + msg);
+        } catch (err) {
+            console.log('Oops, unable to copy');
+        }
+    
+        window.getSelection().removeAllRanges();
 }

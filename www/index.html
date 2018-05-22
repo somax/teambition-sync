@@ -66,6 +66,10 @@
         .error{
             color: red;
         }
+        .btn-copy{
+            position: absolute;
+            right: 8px;
+        }
     </style>
 </head>
 
@@ -76,10 +80,11 @@
     <a class="btn" id="linkGetToken" href="">
         Get token</a>
 
-    <h3>Token (in cookie):</h3>
-    <pre id="token">
-
-    </pre>
+    <h3>Access_Token:</h3>
+        <div class="wrap">
+            <button class="btn-copy" onclick="copy('#token')">copy</button>
+    <pre id="token"></pre>
+    </div>
 
     <h3>API List:</h3>
     <a id="apis"></a>
@@ -99,7 +104,10 @@
         <a href="https://docs.teambition.com/" target="tb_docs">https://docs.teambition.com/</a>
     </blockquote>
 
-    <code id="result">Wait for execute...</code>
+    <div class="wrap">
+        <button class="btn-copy" onclick="copy('#result')">copy</button>
+        <code id="result">Wait for execute...</code>
+    </div>
 
 </body>
 <script src="app.js"></script>
