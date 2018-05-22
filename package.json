@@ -12,7 +12,9 @@
   "dependencies": {
     "cookie-parser": "^1.4.3",
     "express": "^4.16.2",
-    "request": "^2.83.0"
+    "request": "^2.83.0",
+    "rethinkdbdash": "^2.3.31",
+    "solog": "^0.2.0"
   },
   "directories": {
     "test": "test"
