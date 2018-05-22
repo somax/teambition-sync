@@ -50,6 +50,10 @@ $btn_exec.onclick = function (event) {
     doExecute();
 }
 
+$cb_sync.onchange = event => {
+    $table_name.disabled = !event.target.checked;
+}
+
 function onApiStrChange(v) {
     $btn_exec.disabled = v === '';
     $table_name.value = v ? v.split('?')[0].split('/')[1] : '';
@@ -61,7 +65,7 @@ function doExecute() {
 
 function requestApi(api) {
     // 分页 ?count=10&page=1, 默认 count=30 ，count 小于 10 无效
-    fetch(`/api${api}?count=${$count.value}&page=${$page.value}`, {
+    fetch(`/api${api}?count=${$count.value}&page=${$page.value}&sync=${$cb_sync.checked}&table=${$table_name.value}`, {
         credentials: "same-origin"
     })
         .then(

@@ -36,21 +36,50 @@ app.get('/api-list', (req, res) => {
  */
 app.use('/api', (req, res) => {
     let token = req.query.access_token || req.cookies.tb_token;
-    requestApi(req.url, token, (data, stateCode) => {
-        res.send(stateCode, data)
-    });
+    if (req.query.sync === 'true') {
+        log.debug('do sync')
+        let _url = `https://api.teambition.com${req.url}&access_token=${token}`;
+        sync(
+            _url,
+            req.query.table,
+            result => res.send(result),
+            err => res.send('500', err.message));
+    } else {
+        log.debug('do request')
+        requestApi(req.url, token, (data, stateCode) => {
+            res.send(stateCode, data);
+        });
+    }
 });
 
-app.use('/sync', (req, res) => {
-    let token = req.query.access_token || req.cookies.tb_token;
-    let _url = `https://api.teambition.com${req.url}?access_token=${token}`;
-log.debug(_url)
-    db.table('posts')
-        .insert(db._r.http(_url))
-        .then(_r => res.send(_r))
-        .catch(_err => res.send('500',_err.message));
+// app.use('/sync', (req, res) => {
+//     let token = req.query.access_token || req.cookies.tb_token;
+//     let _url = `https://api.teambition.com${req.url}?access_token=${token}`;
+// log.debug(_url)
+//     db.table('posts')
+//         .insert(db._r.http(_url))
+//         .then(_r => res.send(_r))
+//         .catch(_err => res.send('500',_err.message));
 
-});
+// });
+
+function sync(url, tableName, cb, cb_err) {
+    let r = db._r;
+    // TODO sync first time got error when table not exist.
+    db.tableList().contains(tableName)
+        .do(function (tableExists) {
+            return r.branch(
+                tableExists,
+                { tables_created: 0 },
+                db.tableCreate(tableName)
+            );
+        }).then(db.table(tableName)
+            .insert(r.http(url), {conflict:'update'})
+            .then(cb)
+            .catch(cb_err))
+
+    
+}
 
 function requestApi(url, token, cb) {
     let _url = `https://api.teambition.com${url}`;
@@ -67,10 +96,6 @@ function requestApi(url, token, cb) {
             cb(body, r.statusCode)
         }
     )
-}
-
-function save2DB(cb) {
-    db.table('posts').insert({_id:'test'}).then(cb)
 }
 
 
