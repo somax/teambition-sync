@@ -5,6 +5,8 @@ const request = require('request');
 // const log = require('./lib/log');
 const log = require('solog');
 
+const db = require('./lib/rdb');
+
 // setTimeout(() => {
     
 //     log.insert({ v: 'test' })
@@ -26,6 +28,8 @@ app.get('/api-list', (req, res) => {
     )
 })
 
+
+
 /**
  * 
  * 接口代理，当然浏览器端也可以直接调用，这里做代理是为了后续数据入库做准备 
@@ -35,6 +39,17 @@ app.use('/api', (req, res) => {
     requestApi(req.url, token, (data, stateCode) => {
         res.send(stateCode, data)
     });
+});
+
+app.use('/sync', (req, res) => {
+    let token = req.query.access_token || req.cookies.tb_token;
+    let _url = `https://api.teambition.com${req.url}?access_token=${token}`;
+log.debug(_url)
+    db.table('posts')
+        .insert(db._r.http(_url))
+        .then(_r => res.send(_r))
+        .catch(_err => res.send('500',_err.message));
+
 });
 
 function requestApi(url, token, cb) {
@@ -52,6 +67,10 @@ function requestApi(url, token, cb) {
             cb(body, r.statusCode)
         }
     )
+}
+
+function save2DB(cb) {
+    db.table('posts').insert({_id:'test'}).then(cb)
 }
 
 
