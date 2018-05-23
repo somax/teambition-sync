@@ -30,11 +30,11 @@ let apis = [
 
 createApiList(apis)
 
-// when click api list
+// 点击 API 列表项目时将该项目填充到 API 输入框
 $appList.onclick = function clickApi(event) {
     event.preventDefault();
     let element = event.target;
-    let api_str = element.innerHTML;
+    let api_str = element.innerText;
     if (element.tagName === 'A') {
         $api_str.value = api_str;
         onApiStrChange(api_str);
@@ -57,8 +57,10 @@ $cb_sync.onchange = event => {
     $table_name.disabled = !event.target.checked;
 }
 
+// 一些API输入框变化后的自动操作
 function onApiStrChange(v) {
     $btn_exec.disabled = v === '';
+    // 根据 API 名称自动预测数据库表名
     $table_name.value = v ? v.split('?')[0].split('/')[1] : '';
 }
 

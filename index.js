@@ -52,16 +52,6 @@ app.use('/api', (req, res) => {
     }
 });
 
-// app.use('/sync', (req, res) => {
-//     let token = req.query.access_token || req.cookies.tb_token;
-//     let _url = `https://api.teambition.com${req.url}?access_token=${token}`;
-// log.debug(_url)
-//     db.table('posts')
-//         .insert(db._r.http(_url))
-//         .then(_r => res.send(_r))
-//         .catch(_err => res.send('500',_err.message));
-
-// });
 
 function sync(url, tableName, cb, cb_err) {
     let r = db._r;
