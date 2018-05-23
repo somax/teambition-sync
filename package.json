@@ -1,6 +1,6 @@
 {
   "name": "teambition-sync",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "teambition 数据同步",
   "main": "index.js",
   "scripts": {
