@@ -4,74 +4,82 @@ let $linkGetToken = qs('#linkGetToken');
 let $token = qs('#token');
 let $appList = qs('#apiList');
 let $result = qs('#result');
-let $api_str = qs('#api_str');
-let $btn_exec = qs('#btn_exec');
-let $cb_sync = qs('#cb_sync');
-let $table_name = qs('#table_name');
+let $apiStr = qs('#api_str');
+let $btnExec = qs('#btn_exec');
+let $cboxSync = qs('#cb_sync');
+let $tableName = qs('#table_name');
 let $count = qs('#count');
 let $page = qs('#page');
 
-
+let apis = [
+    { table: 'version', uri: '/version' },
+    { table: 'users', uri: '/users/me' },
+    { table: 'projects', uri: '/projects' },
+    { table: 'posts', uri: '/posts/me' },
+    { table: 'posts', uri: '/projetcts/{projectId}/posts' },
+    { table: 'tags', uri: '/tags?tagType=project&_projectId={projectId}' }
+]
 
 $linkGetToken.href = `https://account.teambition.com/oauth2/authorize?client_id=81b72af0-df42-11e7-b88c-3156a53a7259&redirect_uri=${document.location.origin}/auth/callback`
 
-
 $token.innerHTML = cookies.tb_token;
-
-let apis = [
-    '/version',
-    '/users/me',
-    '/projects',
-    '/posts/me',
-    '/projetcts/{projectId}/posts',
-    '/tags?tagType=project&_projectId={projectId}'
-]
-// /tags?tagType=project&_projectId=5523e1c14c248b9727c794cb
 
 createApiList(apis)
 
+$appList.onclick = onClickApi;
+$apiStr.onkeyup = onApiStrKeyup;
+// $apiStr.oninput = onApiStrChange;
+$btnExec.onclick = doExecute;
+$cboxSync.onchange = toggleTableNameDisabled;
+
 // 点击 API 列表项目时将该项目填充到 API 输入框
-$appList.onclick = function clickApi(event) {
+function onClickApi(event) {
     event.preventDefault();
     let element = event.target;
-    let api_str = element.innerText;
+    let apiStr = element.innerText;
     if (element.tagName === 'A') {
-        $api_str.value = api_str;
-        onApiStrChange(api_str);
+        $apiStr.value = apiStr;
+        $tableName.value = element['data-table'];
+        toggleExecBtnDisabled(apiStr);
         // doExecute();
     }
 }
 
-$api_str.onkeyup = function (event) {
+// 
+function onApiStrKeyup(event) {
     if (event.key === "Enter") {
         doExecute();
     }
-    onApiStrChange(this.value);
+    toggleExecBtnDisabled(this.value);
 }
 
-$btn_exec.onclick = function (event) {
-    doExecute();
-}
-
-$cb_sync.onchange = event => {
-    $table_name.disabled = !event.target.checked;
+// function onApiStrChange(event) {
+//     toggleExecBtnDisabled(event.target.value);
+// }
+// 
+function toggleTableNameDisabled(event) {
+    $tableName.disabled = !event.target.checked;
 }
 
 // 一些API输入框变化后的自动操作
-function onApiStrChange(v) {
-    $btn_exec.disabled = v === '';
+function toggleExecBtnDisabled(v) {
+    $btnExec.disabled = v === '';
+}
+
+function setTableName() {
     // 根据 API 名称自动预测数据库表名
-    $table_name.value = v ? v.split('?')[0].split('/')[1] : '';
+    // $table_name.value = v ? v.split('?')[0].split('/')[1] : '';
 }
 
 function doExecute() {
-    requestApi($api_str.value);
+    requestApi($apiStr.value);
 }
 
 function requestApi(api) {
     // 分页 ?count=10&page=1, 默认 count=30 ，count 小于 10 无效
     let _symbol = api.indexOf('?') === -1 ? '?' : '&';
-    fetch(`/api${api}${_symbol}count=${$count.value}&page=${$page.value}&sync=${$cb_sync.checked}&table=${$table_name.value}`, {
+    let isError = false;
+    fetch(`/api${api}${_symbol}count=${$count.value}&page=${$page.value}&sync=${$cboxSync.checked}&table=${$tableName.value}`, {
         credentials: "same-origin"
     })
         .then(
@@ -79,21 +87,17 @@ function requestApi(api) {
                 if (res.ok) {
                     return res.json();
                 } else {
-                    throw (new Error(res.statusText));
+                    isError = true;
+                    return res.text();
                 }
             }
         )
-        .then(fillResult)
+        .then(data => fillResult(data, isError))
         .catch(errorHandler)
 }
 
 function fillResult(content, isError) {
-    if (isError) {
-        $result.className = 'error'
-        content = content.message;
-    } else {
-        $result.className = ''
-    }
+    $result.className = isError ? 'error' : '';
 
     if (typeof content === 'object') {
         content = JSON.stringify(content, null, 2);
@@ -101,12 +105,13 @@ function fillResult(content, isError) {
     $result.innerText = content;
 }
 
-function createApiList(arr) {
-    arr.forEach(api => {
+function createApiList(apis) {
+    apis.forEach(api => {
         let _a = document.createElement('a');
-        _a.href = `/api${api}`;
-        _a.innerHTML = api;
-        // _a.target = 'result';
+        _a.href = `/api${api.uri}`;
+        _a.innerHTML = api.uri;
+        _a['data-table'] = api.table;
+
         $appList.append(_a);
     })
 }
@@ -122,34 +127,35 @@ function parserCookieStr(cookieStr) {
 }
 
 function errorHandler(error) {
-    fillResult(error, true)
+    // fillResult(error, true)
     console.error(error);
 }
 
+// 
 function copy(selector, btn) {
     let markStatus;
     $target = document.querySelector(selector);
 
-        var range = document.createRange();
-        range.selectNode($target);
-        window.getSelection().addRange(range);
+    var range = document.createRange();
+    range.selectNode($target);
+    window.getSelection().addRange(range);
 
-        try {
-            var successful = document.execCommand('copy');
-            var msg = successful ? 'successful' : 'unsuccessful';
-            console.log('Copy was ' + msg);
-            markStatus = successful ? '√ ' : 'X ';
-        } catch (err) {
-            console.log('Oops, unable to copy');
-            markStatus = 'X '
-        }
-    
+    try {
+        var successful = document.execCommand('copy');
+        var msg = successful ? 'successful' : 'unsuccessful';
+        console.log('Copy was ' + msg);
+        markStatus = successful ? '√ ' : 'X ';
+    } catch (err) {
+        console.log('Oops, unable to copy');
+        markStatus = 'X '
+    }
+
     window.getSelection().removeAllRanges();
-    
+
     if (btn && markStatus) {
         btn.innerText = markStatus + btn.innerText;
         setTimeout(() => {
-            btn.innerText = btn.innerText.replace(markStatus,'')
+            btn.innerText = btn.innerText.replace(markStatus, '')
         }, 2000);
     }
 

@@ -43,11 +43,11 @@ app.use('/api', (req, res) => {
             _url,
             req.query.table,
             result => res.send(result),
-            err => res.send('500', err.message));
+            err => res.status(500).send(err.message));
     } else {
         log.debug('do request')
         requestApi(req.url, token, (data, stateCode) => {
-            res.send(stateCode, data);
+            res.status(stateCode).send(data);
         });
     }
 });
@@ -61,7 +61,7 @@ function sync(url, tableName, cb, cb_err) {
             return r.branch(
                 tableExists,
                 { tables_created: 0 },
-                db.tableCreate(tableName)
+                db.tableCreate(tableName, { primaryKey:'_id'})
             );
         }).then(() => db.table(tableName)
             .insert(r.http(url), {conflict:'update'})
