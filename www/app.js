@@ -22,8 +22,11 @@ let apis = [
     '/version',
     '/users/me',
     '/projects',
-    '/posts/me'
+    '/posts/me',
+    '/projetcts/{projectId}/posts',
+    '/tags?tagType=project&_projectId={projectId}'
 ]
+// /tags?tagType=project&_projectId=5523e1c14c248b9727c794cb
 
 createApiList(apis)
 
@@ -65,7 +68,8 @@ function doExecute() {
 
 function requestApi(api) {
     // 分页 ?count=10&page=1, 默认 count=30 ，count 小于 10 无效
-    fetch(`/api${api}?count=${$count.value}&page=${$page.value}&sync=${$cb_sync.checked}&table=${$table_name.value}`, {
+    let _symbol = api.indexOf('?') === -1 ? '?' : '&';
+    fetch(`/api${api}${_symbol}count=${$count.value}&page=${$page.value}&sync=${$cb_sync.checked}&table=${$table_name.value}`, {
         credentials: "same-origin"
     })
         .then(
@@ -120,7 +124,8 @@ function errorHandler(error) {
     console.error(error);
 }
 
-function copy(selector) {
+function copy(selector, btn) {
+    let markStatus;
     $target = document.querySelector(selector);
 
         var range = document.createRange();
@@ -131,9 +136,20 @@ function copy(selector) {
             var successful = document.execCommand('copy');
             var msg = successful ? 'successful' : 'unsuccessful';
             console.log('Copy was ' + msg);
+            markStatus = successful ? '√ ' : 'X ';
         } catch (err) {
             console.log('Oops, unable to copy');
+            markStatus = 'X '
         }
     
-        window.getSelection().removeAllRanges();
+    window.getSelection().removeAllRanges();
+    
+    if (btn && markStatus) {
+        btn.innerText = markStatus + btn.innerText;
+        setTimeout(() => {
+            btn.innerText = btn.innerText.replace(markStatus,'')
+        }, 2000);
+    }
+
+
 }

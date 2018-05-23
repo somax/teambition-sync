@@ -73,7 +73,7 @@ function sync(url, tableName, cb, cb_err) {
                 { tables_created: 0 },
                 db.tableCreate(tableName)
             );
-        }).then(db.table(tableName)
+        }).then(() => db.table(tableName)
             .insert(r.http(url), {conflict:'update'})
             .then(cb)
             .catch(cb_err))
